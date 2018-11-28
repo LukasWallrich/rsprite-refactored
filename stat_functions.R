@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 # See if a mean is GRIM-consistent. If not, return the nearest mean that is.
 rSprite.checkGrim <- function (N, tMean, dp) {
   gMean <- tMean

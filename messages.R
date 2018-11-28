@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 # Store a message for future display (unless otherwisde specified).
 # If we have unloaded Shiny for debugging, show the message immediately.
 rSprite.message <- function (s, shinyType="default", shinyNow=FALSE) {

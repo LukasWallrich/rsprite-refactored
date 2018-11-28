@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 # rSPRITE - An implementation of SPRITE, from an idea by James Heathers.
 # Written by Nick Brown (nicholasjlbrown@gmail.com), 2018.
 # Thanks to Cédric Batailler for help with the X-axis.

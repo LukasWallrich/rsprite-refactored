@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 rSprite.huge <- 1e15
 rSprite.dust <- 1e-12
 
