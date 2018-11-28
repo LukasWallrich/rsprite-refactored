@@ -1,0 +1,6 @@
+To do:
+Check when to turn X-axis numbers sideways, eg 13-77 N=345 M=26 SD=12, one pane
+
+To think about (could be hard):
+Allow zero as a number of a fixed value (i.e., that value does not appear).
+From Jordan: If no solution is found, print SD of nearest solution.
