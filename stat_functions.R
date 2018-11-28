@@ -232,145 +232,89 @@ rSprite.seekVector <- function (N, tMean, tSD, scaleMin, scaleMax, dp=2, fixed=c
 # Generate a sample of one or more unique SPRITE solutions.
 rSprite.getSample <- function (maxCases, N, tMean, tSD, scaleMin, scaleMax, dp=2, fixed=c()) {
   result <- list(rows=c(), label="")
-
-  # Generate a sample of one or more unique SPRITE solutions.
-  rSprite.getSample <- function (maxCases, N, tMean, tSD, scaleMin, scaleMax, dp=2, fixed=c()) {
-    result <- list(rows=c(), label="")
-
+  
   # Check mean is possible with GRIM; if not, identify the nearest valid mean.
-    tMean <- rSprite.checkGrim(N, tMean, dp)
-
+  tMean <- rSprite.checkGrim(N, tMean, dp)
+  
   # Determine minimum and maximum SDs.
-    sdLimits <- rSprite.sdLimits(N, tMean, scaleMin, scaleMax, dp)
-
-    for (m in 1:2) {
-      mSD <- sdLimits[m]
-      s <- ""
-      if ((m == 1) && (mSD > tSD)) {
-        s <- "small; minimum="
-      }
-      else if ((m == 2) && (mSD < tSD)) {
-        s <- "large; maximum="
-      }
-
-      if (s != "") {
-        dpformat <- paste("%.", dp, "f", sep="")
-        s <- paste("Target SD ", sprintf(dpformat, tSD), " is too ", s, sprintf(dpformat, mSD), sep="")
-        rSprite.message(s, shinyType="warning")
-        return(result)
-      }
+  sdLimits <- rSprite.sdLimits(N, tMean, scaleMin, scaleMax, dp)
+  
+  for (m in 1:2) {
+    mSD <- sdLimits[m]
+    s <- ""
+    if ((m == 1) && (mSD > tSD)) {
+      s <- "small; minimum="
     }
-
-    if (scaleMin >= scaleMax) {
-      s <- paste("Scale minimum should be smaller than maximum")
+    else if ((m == 2) && (mSD < tSD)) {
+      s <- "large; maximum="
+    }
+    
+    if (s != "") {
+      dpformat <- paste("%.", dp, "f", sep="")
+      s <- paste("Target SD ", sprintf(dpformat, tSD), " is too ", s, sprintf(dpformat, mSD), sep="")
       rSprite.message(s, shinyType="warning")
       return(result)
     }
-
-    result$rows <- c()
-    result$label <- rSprite.chartLabel(N, tMean, tSD, scaleMin, scaleMax, dp, (maxCases > 9))
-    for (i in 1:(maxCases * 8)) {   # 8 is arbitrary; break early if we find enough unique cases.
-      vec <- rSprite.seekVector(N, tMean, tSD, scaleMin, scaleMax, dp, fixed, result$label)
-      if (length(vec) == 0) {       # If no solution was found on this run, return any we found up to now.
-        if (length(result$rows) == 0) {
-          s <- paste("No solution found for ", paste(result$label, collapse=" "), sep="")
-          rSprite.message(s, shinyType="warning")
-        }
-
-        return(result)              # This may be slightly unsatisfactory if solutions are just very hard to come by.
-      }
-
-      fullVec <- sort(c(vec, fixed))         # Sorting lets us find duplicates more easily.
-      if (length(result$rows) == 0) {
-        result$rows <- matrix(fullVec, nrow=1)
-      }
-      else {
-        newRows <- rbind(result$rows, fullVec)
-        if (tail(duplicated(newRows), 1)) {  # The solution we just found is a duplicate.
-          dups <- dups + 1
-          if (dups > maxDups) {
-            break
-          }
-          else {
-            next
-          }
-        }
-
-        result$rows <- newRows
-      }
-
-      nCases <- nrow(result$rows)
-      if (nCases == maxCases) {
-        incomplete <- FALSE
-        break
-      }
-
-  # Calculate the maximum number of consecutive duplicates we will accept before deciding to give up.
-  # The value of 0.00001 below is our nominal acceptable chance of missing a valid solution;
-  #  however, it's extremely likely that all possible solutions are not all equally likely to be found.
-  # So we also set a floor of 100 attempts.
-      maxDups <- max(round(log(0.00001) / log(nCases / (nCases + 1))), 100)
-      dups <- 0
-    }
-
-    if (nCases < maxCases) {
-      was <- if (nCases == 1) "was" else "were"
-      s <- paste(maxCases, " unique examples were requested, but only ", nrow(result$rows), " ", was, " found", sep="")
-      rSprite.message(s, shinyType="warning")
-    }
-
+  }
+  
+  if (scaleMin >= scaleMax) {
+    s <- paste("Scale minimum should be smaller than maximum")
+    rSprite.message(s, shinyType="warning")
     return(result)
   }
-
-  # Build a single results chart (grob).
-  rSprite.buildOneChart <- function (vec, scaleMin, scaleMax, gridSize, xMax, yMax, label) {
-    df <- data.frame(vec)
-
-  # Avoid showing a large number of empty elements on the right of the X-axis if our upper bound is very large.
-    xLimit <- if (((scaleMax - scaleMin) <= 11) || (xMax > scaleMax))
-                max(scaleMax, xMax)
-              else
-                min(scaleMax, (xMax + 2))
-    xBreaks <- scaleMin:xLimit
-
-  # Allow for room above the highest bar to display the label.
-    yLimit <- yMax
-    llen <- length(label)
-    if (llen > 0) {
-      yBump <- round(llen * max(2, yMax * 0.1) * (((gridSize >= 4) + 2) / 2))
-      yLimit <- yMax + yBump
-    }
-
-    yTicks <- c(10, 8, 6, 5, rep(4, 6))[gridSize]
-    yTickSize <- round((yMax / (yTicks - 1)) + 1)
-    yLabelGaps <- c(1, 2, 3, 4, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000)
-    yGap <- yLabelGaps[yLabelGaps >= yTickSize][1]
-    yBreaks <- (0:(yTicks - 1)) * yGap
-
-    axisTitleSize <- c(20, 14, 12, 11, 10, rep(8, 5))[gridSize]
-    axisTextSize <- c(16, 12, 10, 9, 8, rep(7, 5))[gridSize]
-
-    grob <- ggplot(df, aes(x=factor(vec, levels=xBreaks))) +
-            geom_bar(fill="#0099ff", width=0.9) +
-            scale_x_discrete(drop=FALSE) +
-            scale_y_continuous(limits=c(0, yLimit), breaks=yBreaks) +
-            theme(axis.title=element_text(size=axisTitleSize)) +
-            theme(axis.text=element_text(size=axisTextSize)) +
-            labs(x="response", y="count")
-
-    if (llen > 0) {
-      if (gridSize <= 10) {
-        labelTextSize <- axisTitleSize * 0.352778 * (1 - (0.1 * (gridSize >= 8)))     # see StackOverflow 36547590
-        labelText <- paste(label, collapse="\n")
-        labelY <- (yLimit + 1 - llen) - (gridSize >= 5) - (gridSize >= 7)
-        grob <- grob + annotate("text", x=round((xLimit + scaleMin) / 2), y=labelY, label=labelText, size=labelTextSize)
+  
+  result$rows <- c()
+  result$label <- rSprite.chartLabel(N, tMean, tSD, scaleMin, scaleMax, dp, (maxCases > 9))
+  for (i in 1:(maxCases * 8)) {   # 8 is arbitrary; break early if we find enough unique cases.
+    vec <- rSprite.seekVector(N, tMean, tSD, scaleMin, scaleMax, dp, fixed, result$label)
+    if (length(vec) == 0) {       # If no solution was found on this run, return any we found up to now.
+      if (length(result$rows) == 0) {
+        s <- paste("No solution found for ", paste(result$label, collapse=" "), sep="")
+        rSprite.message(s, shinyType="warning")
       }
+      
+      return(result)              # This may be slightly unsatisfactory if solutions are just very hard to come by.
     }
-
-    flipXThreshold <- c(50, 30, 10, 15, 10, rep(3, 5))[gridSize]
-    if (length(xBreaks) > flipXThreshold) {
-      grob <- grob + theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5))
+    
+    fullVec <- sort(c(vec, fixed))         # Sorting lets us find duplicates more easily.
+    if (length(result$rows) == 0) {
+      result$rows <- matrix(fullVec, nrow=1)
     }
-
-    return(grob)
+    else {
+      newRows <- rbind(result$rows, fullVec)
+      if (tail(duplicated(newRows), 1)) {  # The solution we just found is a duplicate.
+        dups <- dups + 1
+        if (dups > maxDups) {
+          break
+        }
+        else {
+          next
+        }
+      }
+      
+      result$rows <- newRows
+    }
+    
+    nCases <- nrow(result$rows)
+    if (nCases == maxCases) {
+      incomplete <- FALSE
+      break
+    }
+    
+    # Calculate the maximum number of consecutive duplicates we will accept before deciding to give up.
+    # The value of 0.00001 below is our nominal acceptable chance of missing a valid solution;
+    #  however, it's extremely likely that all possible solutions are not all equally likely to be found.
+    # So we also set a floor of 100 attempts.
+    maxDups <- max(round(log(0.00001) / log(nCases / (nCases + 1))), 100)
+    dups <- 0
   }
+  
+  if (nCases < maxCases) {
+    was <- if (nCases == 1) "was" else "were"
+    s <- paste(maxCases, " unique examples were requested, but only ", nrow(result$rows), " ", was, " found", sep="")
+    rSprite.message(s, shinyType="warning")
+  }
+  
+  return(result)
+}
+
