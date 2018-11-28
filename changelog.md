@@ -65,3 +65,14 @@
  * Added note about privatcy to the help text.
  * Added blank line before download link.
  * Added "loading" spinner image.
+
+### 2018-05-26 19:27Z 0.13
+  * Added note about privatcy to the help text.
+  * Added blank line before download link.
+  * Added "loading" spinner image.
+
+### 2018-11-08 23:40Z 0.14
+  * Increased the size of the plot area.
+  * Changed help text to point to preprint article instead of James's blog post.
+  * Added CC-BY license.
+  * Fixed a small bug that caused slightly different X-axis widths depending on the data.
