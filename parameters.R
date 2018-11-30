@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 rSprite.huge <- 1e15
 rSprite.dust <- 1e-12
 
@@ -22,3 +24,8 @@ fixedSeed <- 0
 
 dstep <- c(0.1, 0.01, 0.001)[dp]
 
+rSprite.notifIdList <<- list()
+rSprite.messageList <<- list()
+rSprite.prevGo <<- 0
+rSprite.prevHelp <<- 0
+rSprite.plotData <<- c()

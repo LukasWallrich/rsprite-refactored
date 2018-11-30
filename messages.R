@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 # Store a message for future display (unless otherwisde specified).
 # If we have unloaded Shiny for debugging, show the message immediately.
 rSprite.message <- function (s, shinyType="default", shinyNow=FALSE) {
@@ -5,7 +7,7 @@ rSprite.message <- function (s, shinyType="default", shinyNow=FALSE) {
     cat("rSPRITE message: |", s, "| (shinyType=", shinyType, ")", "\n", sep="")
     return()
   }
-  
+
   message <- paste(shinyType, s, sep="%%")
   if (shinyNow) {
     rSprite.shinyMessages(list(message))
@@ -21,7 +23,7 @@ rSprite.shinyMessages <- function (messageList) {
     removeNotification(x)
   })
   rSprite.notifIdList <<- list()
-  
+
   uniqueMessages <- unique(unlist(messageList))
   sapply(uniqueMessages, function (x) {
     split <- unlist(strsplit(x, "%%"))
@@ -59,8 +61,7 @@ rSprite.helpText <- c(
   , " Like any tool, it has the potential to be used incorrectly."
   , " If you ask it do something silly, it will do it, very probably without warning you."
   , "<br/><br/>"
-  , "For more information on SPRITE in general, see"
-  , " <a href=https://hackernoon.com/introducing-sprite-and-the-case-of-the-carthorse-child-58683c2bfeb>here</a>."
+  , "For more information on SPRITE in general, see <a href=https://peerj.com/preprints/26968v1/>here</a>."
   , "<br/><br/>"
   , "Please report bugs to nicholasjlbrown@gmail.com"
   , "<br/><br/>"
@@ -68,9 +69,3 @@ rSprite.helpText <- c(
   , " If you are using this code in a web browser at shinyapps.io, you can find the RStudio"
   , " terms of use <a href='https://www.rstudio.com/about/rstudio-service-terms-of-use/'>here</a>."
 )
-
-rSprite.notifIdList <<- list()
-rSprite.messageList <<- list()
-rSprite.prevGo <<- 0
-rSprite.prevHelp <<- 0
-rSprite.plotData <<- c()
