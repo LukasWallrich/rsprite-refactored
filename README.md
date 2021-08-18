@@ -8,7 +8,7 @@ I then added some functions to make it easier to run 'out of the box' - primaril
 library(shiny)
 
 # Easiest way is to use runGitHub from the shiny package
-runGitHub("rsrpite-refactored", "LukasWallrich")
+runGitHub("rsprite-refactored", "LukasWallrich")
 ```
 
 Code is lifted from https://osf.io/pwjad/ and all credit to Nick Brown and James Heathers for the substance of it.
